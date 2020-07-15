@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/title_top_white"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+<!--        它拥有独立的特殊的绘制表面，即 它不与其宿主窗口共享一个绘制表面-->
+<!--        SurefaceView的UI可以在一个独立的线程中进行绘制-->
+<!--        因为不会占用主线程资源，一方面可以实现复杂而高效的UI，二是不会导致用户输入得不到及时响应。-->
+        <SurfaceView
+            android:id="@+id/scan_activity_preview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:keepScreenOn="true" />
+
+        <com.huawenli.zxing.view.ScannerView
+            android:id="@+id/scan_activity_mask"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <FrameLayout
+            android:id="@+id/fl_overlay_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <CheckBox
+            android:id="@+id/cbx_torch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|right"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/torch_icon"
+            android:button="@null"
+            android:visibility="invisible" />
+    </FrameLayout>
+</LinearLayout>

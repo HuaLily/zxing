@@ -1,0 +1,5 @@
+rootProject.name='zxing'
+include ':app'
+include ':android'
+include ':myzxing'
+include ':horizon'
