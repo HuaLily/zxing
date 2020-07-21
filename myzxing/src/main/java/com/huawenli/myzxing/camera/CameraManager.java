@@ -78,6 +78,8 @@ public final class CameraManager {
 
 
         if (!island){
+            //竖屏时需要旋转90度
+            Log.i("huawenli","camera 90");
             camera.setDisplayOrientation(90);
         }
 
@@ -243,9 +245,11 @@ public final class CameraManager {
 //        return new PlanarYUVLuminanceSource(data, cameraResolution.width,
 //                cameraResolution.height, framePreview.top, framePreview.left,
 //                framePreview.height(), framePreview.width(), false);
+
+        // 直接返回整幅图像的数据，而不计算聚焦框大小。
         return new PlanarYUVLuminanceSource(data, cameraResolution.width,
                 cameraResolution.height, 0, 0,
-                framePreview.height(), framePreview.width(), false);
+                cameraResolution.width, cameraResolution.height, false);
     }
 
 //    public void setTorch(final boolean enabled) {

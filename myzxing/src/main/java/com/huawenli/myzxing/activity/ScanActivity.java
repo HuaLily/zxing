@@ -1,9 +1,11 @@
 package com.huawenli.myzxing.activity;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -21,6 +23,7 @@ import android.os.Process;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -89,6 +92,7 @@ public class ScanActivity extends AppCompatActivity implements SurfaceHolder.Cal
             || Build.MODEL.equals("GT-I9300") // Galaxy S3
             || Build.MODEL.equals("GT-N7000"); // Galaxy Note
 
+    @SuppressLint("SourceLockedOrientationActivity")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         Log.i(TAG,"onCreate");
@@ -115,14 +119,14 @@ public class ScanActivity extends AppCompatActivity implements SurfaceHolder.Cal
 //        findViewById(R.id.view_top_right).setOnClickListener(onClickListener);
 
 
-        Configuration configuration = this.getResources().getConfiguration();
-        if (configuration.orientation ==  Configuration.ORIENTATION_LANDSCAPE  ){
-            island = true;
+        Intent intent = getIntent();
+        island = intent.getBooleanExtra("island",true);
+        Log.i(TAG,"island = "+ island);
+        if (island ){
+            this.setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }else {
+           this.setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
-        if (configuration.orientation ==  Configuration.ORIENTATION_PORTRAIT ){
-            island = false;
-        }
-        Log.i("h","island = "+island);
     }
 
     //没有用到
@@ -222,7 +226,7 @@ public class ScanActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     public void handleResult(final Result scanResult, Bitmap thumbnailImage,
                              final float thumbnailScaleFactor) {
-        Log.i(TAG,"handleResult");
+        Log.i("huawenli","handleResult");
         vibrate();//先震动
         // superimpose dots to highlight the key features of the qr code
 //        final ResultPoint[] points = scanResult.getResultPoints();
@@ -237,15 +241,15 @@ public class ScanActivity extends AppCompatActivity implements SurfaceHolder.Cal
 //                canvas.drawPoint(point.getX(), point.getY(), paint);
 //        }
 
-        Matrix matrix = new Matrix();
-        matrix.postRotate(90);
+        Matrix matrix = new Matrix(); //Matrix是一个3 x 3的矩阵工具类
+        matrix.postRotate(90);//围绕默认的点（0，0）,顺时针旋转
         thumbnailImage = Bitmap.createBitmap(thumbnailImage, 0, 0,
                 thumbnailImage.getWidth(), thumbnailImage.getHeight(), matrix,
                 false);
         scannerView.drawResultBitmap(thumbnailImage);
 
         final Intent result = getIntent();
-        Log.i("ansen","扫描结果:"+scanResult.getText());
+        Log.i("hua","扫描结果:"+scanResult.getText());
         result.putExtra(INTENT_EXTRA_RESULT,scanResult.getText());
         setResult(RESULT_OK, result);
 
@@ -294,7 +298,8 @@ public class ScanActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 if (nonContinuousAutoFocus)
                     cameraHandler.post(new AutoFocusRunnable(camera));
 
-                cameraHandler.post(fetchAndDecodeRunnable);
+                cameraHandler.post(fetchAndDecodeRunnable);//最主要的获取图像并解码
+
             } catch (final IOException x) {
                 Log.i("problem opening camera", x.toString());
                 finish();
@@ -433,33 +438,39 @@ public class ScanActivity extends AppCompatActivity implements SurfaceHolder.Cal
 //            }
             Log.i("huwenli","fetchAndDecodeRunnable");
             cameraManager.requestPreviewFrame(new Camera.PreviewCallback() {
+
                 @Override
                 public void onPreviewFrame(final byte[] data, final Camera camera) {
+                    //接收到每一帧的预览数据
+                    Log.i("huawenli","获取每一帧的数据：");
                     decode(data);
                 }
             });
         }
 
         private void decode(final byte[] data) {
+            Log.i("huawenli","decode");
             final PlanarYUVLuminanceSource source = cameraManager.buildLuminanceSource(data);
             final BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(source));
 
             try {
-                hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK,
-                        new ResultPointCallback() {
-                            @Override
-                            public void foundPossibleResultPoint(
-                                    final ResultPoint dot) {
-                                runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        scannerView.addDot(dot);
-                                    }
-                                });
-                            }
-                        });
+//                hints.put(DecodeHintType.NEED_RESULT_POINT_CALLBACK,
+//                        new ResultPointCallback() {
+//                            @Override
+//                            public void foundPossibleResultPoint(
+//                                    final ResultPoint dot) {
+//                                runOnUiThread(new Runnable() {
+//                                    @Override
+//                                    public void run() {
+//                                        scannerView.addDot(dot);
+//                                    }
+//                                });
+//                            }
+//                        });
                 final Result scanResult = reader.decode(bitmap, hints);
-                if (!resultValid(scanResult.getText())) {
+ //               if (!resultValid(scanResult.getText())) {
+                if (TextUtils.isEmpty(scanResult.getText())){
+                    Log.i("huawenli","decode text is empty");
                     cameraHandler.post(fetchAndDecodeRunnable);
                     return;
                 }
@@ -482,6 +493,8 @@ public class ScanActivity extends AppCompatActivity implements SurfaceHolder.Cal
                     }
                 });
             } catch (final Exception x) {
+                //只要没解析到就会抛出NotFoundException，然后再次获取数据
+                Log.i("huawenli","decode Exception "+x.toString());
                 cameraHandler.post(fetchAndDecodeRunnable);
             } finally {
                 reader.reset();

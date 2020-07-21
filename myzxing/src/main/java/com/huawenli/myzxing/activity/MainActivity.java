@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
 
     private static final int START_SACN_REQUESTCODE = 1 ;
     TextView mShowResultTv;
+    boolean island;
 
 
     @Override
@@ -56,8 +57,8 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
             @Override
             public void onClick(View view) {
                     Configuration cfg = getResources().getConfiguration();
-                    if ( cfg.orientation == Configuration.ORIENTATION_LANDSCAPE ){
-                        MainActivity.this.setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                    if ( cfg.orientation == Configuration.ORIENTATION_LANDSCAPE ){ //当前是横屏
+                        MainActivity.this.setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT); //转化成竖屏
 
                     }else {
                         MainActivity.this.setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -65,7 +66,6 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     }
             }
         });
-
 
 
         startScanBtn.setOnClickListener(new View.OnClickListener() {
@@ -97,8 +97,17 @@ public class MainActivity extends AppCompatActivity implements EasyPermissions.P
                     Toast.makeText(MainActivity.this, "具有读写权限", Toast.LENGTH_LONG).show();
                 }
 
+                //点击扫码的时候，需要判断当前的屏幕方向
+                Configuration configuration = MainActivity.this.getResources().getConfiguration();
+                if (configuration.orientation ==  Configuration.ORIENTATION_LANDSCAPE  ){
+                    island = true;
+                }
+                if (configuration.orientation ==  Configuration.ORIENTATION_PORTRAIT ){
+                    island = false;
+                }
 
                 Intent intent = new Intent(MainActivity.this, ScanActivity.class);
+                intent.putExtra("island",island);
                 startActivityForResult(intent,START_SACN_REQUESTCODE);
             }
         });

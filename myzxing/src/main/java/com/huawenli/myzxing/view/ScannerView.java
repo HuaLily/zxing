@@ -32,9 +32,8 @@ import com.huawenli.myzxing.R;
 import com.huawenli.myzxing.utils.ScreenUtil;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Scanner;
+
 
 
 public class ScannerView extends View {
